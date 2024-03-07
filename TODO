@@ -1,0 +1,16 @@
+line 553
+562
+
+scope.AdSignifier = "stitched";
+scope.ClientID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
+scope.ClientVersion = "null";
+scope.ClientSession = "null";
+scope.PlayerType2 = "embed"; //Source
+scope.PlayerType3 = "autoplay"; //360ptent is normally playing
+
+var urlInfo = new URL(
+    "https://usher.ttvnw.net/api/channel/hls/" +
+      CurrentChannelName +
+      ".m3u8" +
+      UsherParams
+  );
