@@ -34,6 +34,27 @@ function parseM3U8(m3u8Content: string): MediaSegment[] {
 
   return segments;
 }
+function parseAttributes(str) {
+  return Object.fromEntries(
+    str
+      .split(/(?:^|,)((?:[^=]*)=(?:"[^"]*"|[^,]*))/)
+      .filter(Boolean)
+      .map((x) => {
+        const idx = x.indexOf("=");
+        const key = x.substring(0, idx);
+        const value = x.substring(idx + 1);
+        const num = Number(value);
+        return [
+          key,
+          Number.isNaN(num)
+            ? value.startsWith('"')
+              ? JSON.parse(value)
+              : value
+            : num,
+        ];
+      })
+  );
+}
 
 async function getTs(mediaSeg: MediaSegment) {
   try {
@@ -63,20 +84,16 @@ async function hookFetch(
       /([^\/]+)(?=\.\w+$)/
     );
     if (channelNames && channelNames.length) {
-      console.log({ channelName: channelNames[0] });
     }
     for (const { url } of tsDests) {
       if (tsSet.has(url)) {
-        console.log("same m3u8 already found");
       }
       tsSet.add(url);
     }
     // if (tsDest.length) {
     //   getTs(tsDest[0]);
     // }
-    if (txt.includes(Signifier.Ad)) {
-      console.log("AD DETECTED", { txt, tsSet });
-    }
+
     return new Response(txt);
   } else if (urlStr.includes("/api/channel/hls/")) {
     // const url1 = new URL(url.toString());
@@ -87,7 +104,33 @@ async function hookFetch(
       channelName,
       params: usherParams,
     };
-    console.log({ UsherData });
+    const usherm3u8Resp = await realFetch(url);
+    const usherm3u8Txt = await usherm3u8Resp.text();
+    const lines = usherm3u8Txt.replace("\r", "").split("\n");
+
+    console.log({ UsherData, usherm3u8Txt, lines });
+    lines.forEach((line, index) => {
+      if (!line.startsWith("#") && line.includes(".m3u8")) {
+        // streamInfo.Urls[lines[i]] = -1;
+        console.log(1);
+        if (index > 0 && lines[index - 1].startsWith("#EXT-X-STREAM-INF")) {
+          console.log(2);
+
+          var attributes = parseAttributes(lines[index - 1]);
+          var resolution = attributes["RESOLUTION"];
+          var frameRate = attributes["FRAME-RATE"];
+          console.log({ resolution, frameRate });
+          if (resolution) {
+            // streamInfo.Urls[lines[i]] = {
+            //   Resolution: resolution,
+            //   FrameRate: frameRate,
+            // };
+          }
+        }
+        // StreamInfosByUrl[lines[i]] = streamInfo;
+        // MainUrlByUrl[lines[i]] = url;
+      }
+    });
   }
   return realFetch(url, init);
 }

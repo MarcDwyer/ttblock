@@ -3,29 +3,34 @@ import replaceFetchModule from "./replaceFetch?script&module";
 
 import vaftModule from "./vaft?script&module";
 
-type Document = {
+type Script = {
   src: string;
   params: Record<string, any>;
 };
-
-export function inject(docs: Document[]) {
-  for (const { src, params } of docs) {
+async function loadScript({ src, params }: Script): Promise<void> {
+  return new Promise((res) => {
     const script = document.createElement("script");
     script.src = src;
 
     script.dataset.params = JSON.stringify(params);
     (document.head || document.documentElement).prepend(script);
-    script.onload = () => script.remove();
-  }
+    script.onload = () => {
+      res();
+      script.remove();
+    };
+  });
 }
-function oldVAFT(): Document {
+export async function injectScripts(docs: Script[]) {
+  return Promise.all(docs.map(loadScript));
+}
+function oldVAFT(): Script {
   const vaftURL = chrome.runtime.getURL(vaftModule);
   return {
     src: vaftURL,
     params: {},
   };
 }
-function newVAFT(): Document {
+function newVAFT(): Script {
   const workerURL = chrome.runtime.getURL(workerModule);
   const replaceFetchURL = chrome.runtime.getURL(replaceFetchModule);
 
@@ -36,7 +41,7 @@ function newVAFT(): Document {
   return workerDoc;
 }
 function main() {
-  inject([newVAFT()]);
+  injectScripts([newVAFT()]);
 }
 
 main();

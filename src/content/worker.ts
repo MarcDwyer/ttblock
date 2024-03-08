@@ -9,7 +9,7 @@ function toAbsoluteUrl(url: string): string {
   }
 }
 const params = JSON.parse(
-  document.currentScript!.dataset.params!,
+  document.currentScript!.dataset.params!
 ) as DocumentParams;
 
 window.Worker = class Worker extends window.Worker {
@@ -36,10 +36,6 @@ window.Worker = class Worker extends window.Worker {
     };
     const myScript = `
       const pageState = ${JSON.stringify(workerPageState)};
-      
-      self.addEventListener("message", (e) => {
-      console.log("KEY: ", e.data.key);
-      })     
     try {
             importScripts("${params.replaceFetchURL}");
          } catch(e) {
@@ -48,7 +44,7 @@ window.Worker = class Worker extends window.Worker {
           ${script}
       `;
     const newScriptURL = URL.createObjectURL(
-      new Blob([myScript], { type: "text/javascript" }),
+      new Blob([myScript], { type: "text/javascript" })
     );
     super(newScriptURL, options);
   }
