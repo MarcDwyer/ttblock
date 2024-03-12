@@ -1,9 +1,8 @@
+import replaceFetchModule from "./hookFetch/index?script&module";
 import workerModule from "./worker?script&module";
-import replaceFetchModule from "./replaceFetch?script&module";
-
 import vaftModule from "./vaft?script&module";
 
-type Script = {
+export type Script = {
   src: string;
   params: Record<string, any>;
 };
@@ -34,11 +33,10 @@ function newVAFT(): Script {
   const workerURL = chrome.runtime.getURL(workerModule);
   const replaceFetchURL = chrome.runtime.getURL(replaceFetchModule);
 
-  const workerDoc = {
+  return {
     src: workerURL,
     params: { replaceFetchURL },
   };
-  return workerDoc;
 }
 function main() {
   injectScripts([newVAFT()]);

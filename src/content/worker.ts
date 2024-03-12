@@ -1,5 +1,3 @@
-import { DocumentParams } from ".";
-
 function toAbsoluteUrl(url: string): string {
   try {
     const Url = new URL(url, location.href);
@@ -8,9 +6,9 @@ function toAbsoluteUrl(url: string): string {
     return url;
   }
 }
-const params = JSON.parse(
-  document.currentScript!.dataset.params!
-) as DocumentParams;
+const params = JSON.parse(document.currentScript!.dataset.params!) as {
+  replaceFetchURL: string;
+};
 
 window.Worker = class Worker extends window.Worker {
   constructor(scriptURL: string | URL, options?: WorkerOptions) {
@@ -44,7 +42,7 @@ window.Worker = class Worker extends window.Worker {
           ${script}
       `;
     const newScriptURL = URL.createObjectURL(
-      new Blob([myScript], { type: "text/javascript" })
+      new Blob([myScript], { type: "text/javascript" }),
     );
     super(newScriptURL, options);
   }
